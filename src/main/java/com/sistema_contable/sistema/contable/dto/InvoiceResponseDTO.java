@@ -29,6 +29,10 @@ public class InvoiceResponseDTO {
     private List<InvoiceItemResponseDTO> items;
     private String costingMethod;
     private Double cmvAmount;
+    private String legalInvoiceNumber;
+    private String cae;
+    private Date caeExpirationDate;
+    private String qrCodeBase64;
 
     public Long getId() {
         return id;
@@ -204,5 +208,37 @@ public class InvoiceResponseDTO {
 
     public void setCmvAmount(Double cmvAmount) {
         this.cmvAmount = cmvAmount;
+    }
+
+    public String getLegalInvoiceNumber() {
+        return legalInvoiceNumber;
+    }
+
+    public void setLegalInvoiceNumber(String legalInvoiceNumber) {
+        this.legalInvoiceNumber = legalInvoiceNumber;
+    }
+
+    public String getCae() {
+        return cae;
+    }
+
+    public void setCae(String cae) {
+        this.cae = cae;
+    }
+
+    public Date getCaeExpirationDate() {
+        return caeExpirationDate;
+    }
+
+    public void setCaeExpirationDate(Date caeExpirationDate) {
+        this.caeExpirationDate = caeExpirationDate;
+    }
+
+    public String getQrCodeBase64() {
+        return qrCodeBase64;
+    }
+
+    public void setQrCodeBase64(String qrCodeBase64) {
+        this.qrCodeBase64 = qrCodeBase64;
     }
 }

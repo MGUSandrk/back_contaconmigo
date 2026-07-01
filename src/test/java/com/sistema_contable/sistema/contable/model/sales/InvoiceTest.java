@@ -1,6 +1,7 @@
 package com.sistema_contable.sistema.contable.model.sales;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 import java.util.List;
@@ -74,5 +75,9 @@ public class InvoiceTest {
         assertEquals(1, invoice.getItems().size());
         assertEquals("Lapicera azul", invoice.getItems().get(0).getProductName());
         assertEquals(300.0, invoice.getItems().get(0).getSubtotal());
+        assertEquals("00004-00000003", invoice.getLegalInvoiceNumber());
+        assertEquals("70417054367476", invoice.getCae());
+        assertEquals("data:image/png;base64,", invoice.getQrCodeBase64().substring(0, 22));
+        assertTrue(invoice.getCaeExpirationDate().after(invoice.getDateCreated()));
     }
 }

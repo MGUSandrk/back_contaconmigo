@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.sistema_contable.sistema.contable.model.CostingMethodType;
 import com.sistema_contable.sistema.contable.model.EntityModel;
 import com.sistema_contable.sistema.contable.model.Role;
 import com.sistema_contable.sistema.contable.model.User;
@@ -13,7 +14,6 @@ import com.sistema_contable.sistema.contable.model.VatCondition;
 import com.sistema_contable.sistema.contable.model.accounting.Account;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.accounting.ControlAccount;
-import com.sistema_contable.sistema.contable.model.CostingMethodType;
 import com.sistema_contable.sistema.contable.services.accounting.interfaces.AccountService;
 import com.sistema_contable.sistema.contable.services.interfaces.EntityService;
 import com.sistema_contable.sistema.contable.services.interfaces.UserService;

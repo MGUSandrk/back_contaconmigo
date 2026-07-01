@@ -1,6 +1,7 @@
 package com.sistema_contable.sistema.contable.model.sales;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +25,9 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "invoices")
 public class Invoice {
+
+    private static final String SIMULATED_CAE = "70417054367476";
+    private static final String SIMULATED_QR_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAIAAADZ8fBYAAAAdUlEQVR42u1WQQ7AIAjj/5/ubssGOCZQT/RgxJiKrUkV8QDgOX6XsgLeSPBaBlFn3nO1KSwtg7OKHWzwtvVL0ZfyHtIXD2QBB7R+/yiYKGm849v4Nr6d8y0M06oOKi+qvnXlm9/vKoGqvrF4bZo26BD+rBK4AP8VCUxN0KX5AAAAAElFTkSuQmCC";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,6 +99,18 @@ public class Invoice {
     @Column(name = "cmv_amount")
     private Double cmvAmount;
 
+    @Column(name = "legal_invoice_number")
+    private String legalInvoiceNumber;
+
+    @Column(name = "cae")
+    private String cae;
+
+    @Column(name = "cae_expiration_date")
+    private Date caeExpirationDate;
+
+    @Column(name = "qr_code_base64", length = 1000)
+    private String qrCodeBase64;
+
     public Invoice() {
     }
 
@@ -123,6 +139,10 @@ public class Invoice {
         invoice.setItems(invoiceItemsFromSale(sale));
         invoice.setCostingMethod(entity.getCostingMethod() != null ? entity.getCostingMethod().name() : null);
         invoice.setCmvAmount(cmvAmount);
+        invoice.setLegalInvoiceNumber(legalInvoiceNumber(entity.getSalesPoint(), sale.getId()));
+        invoice.setCae(SIMULATED_CAE);
+        invoice.setCaeExpirationDate(caeExpirationDate(sale.getDateCreated()));
+        invoice.setQrCodeBase64(SIMULATED_QR_BASE64);
         return invoice;
     }
 
@@ -156,6 +176,19 @@ public class Invoice {
             return 0.0;
         }
         return saleProduct.getPrice() * saleProduct.getQuantity();
+    }
+
+    private static String legalInvoiceNumber(Integer salesPoint, Long invoiceSequence) {
+        Integer point = salesPoint != null ? salesPoint : 1;
+        Long sequence = invoiceSequence != null ? invoiceSequence : 1L;
+        return String.format("%05d-%08d", point, sequence);
+    }
+
+    private static Date caeExpirationDate(Date invoiceDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(invoiceDate != null ? invoiceDate : new Date());
+        calendar.add(Calendar.DAY_OF_MONTH, 10);
+        return calendar.getTime();
     }
 
     public Long getId() {
@@ -332,5 +365,37 @@ public class Invoice {
 
     public void setCmvAmount(Double cmvAmount) {
         this.cmvAmount = cmvAmount;
+    }
+
+    public String getLegalInvoiceNumber() {
+        return legalInvoiceNumber;
+    }
+
+    public void setLegalInvoiceNumber(String legalInvoiceNumber) {
+        this.legalInvoiceNumber = legalInvoiceNumber;
+    }
+
+    public String getCae() {
+        return cae;
+    }
+
+    public void setCae(String cae) {
+        this.cae = cae;
+    }
+
+    public Date getCaeExpirationDate() {
+        return caeExpirationDate;
+    }
+
+    public void setCaeExpirationDate(Date caeExpirationDate) {
+        this.caeExpirationDate = caeExpirationDate;
+    }
+
+    public String getQrCodeBase64() {
+        return qrCodeBase64;
+    }
+
+    public void setQrCodeBase64(String qrCodeBase64) {
+        this.qrCodeBase64 = qrCodeBase64;
     }
 }

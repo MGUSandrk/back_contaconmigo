@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sistema_contable.sistema.contable.dto.InvoiceResponseDTO;
 import com.sistema_contable.sistema.contable.dto.InvoiceItemResponseDTO;
+import com.sistema_contable.sistema.contable.dto.InvoiceResponseDTO;
 import com.sistema_contable.sistema.contable.dto.SaleItemDTO;
 import com.sistema_contable.sistema.contable.dto.SaleRequestDTO;
 import com.sistema_contable.sistema.contable.dto.SaleResponseDTO;
@@ -230,6 +230,10 @@ public class SaleServiceImp implements SaleService {
         dto.setInstallments(invoice.getInstallments());
         dto.setCostingMethod(invoice.getCostingMethod());
         dto.setCmvAmount(invoice.getCmvAmount());
+        dto.setLegalInvoiceNumber(invoice.getLegalInvoiceNumber());
+        dto.setCae(invoice.getCae());
+        dto.setCaeExpirationDate(invoice.getCaeExpirationDate());
+        dto.setQrCodeBase64(invoice.getQrCodeBase64());
         if (invoice.getItems() != null) {
             dto.setItems(invoice.getItems().stream().map(this::mapToInvoiceItemResponseDTO).toList());
         }
