@@ -11,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sistema_contable.sistema.contable.dto.sales.InvoiceItemResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
-import com.sistema_contable.sistema.contable.dto.sales.SaleItemDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleItemRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleItemResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
 import com.sistema_contable.sistema.contable.exceptions.sales.ClientNotFoundException;
@@ -87,7 +88,7 @@ public class SaleServiceImp implements SaleService {
         Double subtotal = 0.0;
         ListLotCost lotCosts = new ListLotCost();
 
-        for (SaleItemDTO item : saleRequestDTO.getItems()) {
+        for (SaleItemRequestDTO item : saleRequestDTO.getItems()) {
             Product product = productRepository.searchById(item.getProductId());
             subtotal += product.getSalePrice() * item.getQuantity();
 
@@ -125,7 +126,7 @@ public class SaleServiceImp implements SaleService {
         sale.setPayments(new ArrayList<>());
 
         // Create SaleProducts
-        for (SaleItemDTO item : saleRequestDTO.getItems()) {
+        for (SaleItemRequestDTO item : saleRequestDTO.getItems()) {
             Product product = productRepository.searchById(item.getProductId());
             SaleProduct saleProduct = new SaleProduct();
             saleProduct.setProduct(product);
@@ -168,9 +169,18 @@ public class SaleServiceImp implements SaleService {
     @Transactional(readOnly = true)
     public List<SaleResponseDTO> getAllSales() throws Exception {
         List<Sale> sales = saleRepository.findAll();
-        return sales.stream()
-                .map(this::mapToSaleResponseDTO)
-                .toList();
+        List<SaleResponseDTO> saleResponseDTOs = new ArrayList<>();
+        for (Sale sale : sales) {
+            SaleResponseDTO saleResponseDTO = mapToSaleResponseDTO(sale);
+            for (SaleProduct saleProduct : sale.getSaleProducts()) {
+                SaleItemResponseDTO itemResponseDTO = new SaleItemResponseDTO();
+                itemResponseDTO.setProductName(saleProduct.getProduct().getName());
+                itemResponseDTO.setQuantity(saleProduct.getQuantity());
+                saleResponseDTO.getProducts().add(itemResponseDTO);
+            }
+            saleResponseDTOs.add(saleResponseDTO);
+        }
+        return saleResponseDTOs;
     }
 
     @Override
@@ -312,7 +322,7 @@ public class SaleServiceImp implements SaleService {
     }
 
     private void deductStock(SaleRequestDTO saleRequestDTO, CostingMethodType costingMethod) throws Exception {
-        for (SaleItemDTO item : saleRequestDTO.getItems()) {
+        for (SaleItemRequestDTO item : saleRequestDTO.getItems()) {
             List<Lot> lots;
             
             switch (costingMethod) {
@@ -361,7 +371,7 @@ public class SaleServiceImp implements SaleService {
 
     private void createSaleEntry(Sale sale, User seller, BalanceAccount paymentAccount) throws Exception {
         Entry entry = new Entry();
-        entry.setDescription("Sale #" + sale.getId() + " - " + sale.getClient().getFullName());
+        entry.setDescription("Venta #" + sale.getId() + " - " + sale.getClient().getFullName());
         
         List<Movement> movements = new ArrayList<>();
 
@@ -391,7 +401,7 @@ public class SaleServiceImp implements SaleService {
 
     private void createCMVEntry(Sale sale, User seller, Double cmvAmount) throws Exception {
         Entry entry = new Entry();
-        entry.setDescription("CMV for Sale #" + sale.getId());
+        entry.setDescription("CMV por venta #" + sale.getId());
         
         List<Movement> movements = new ArrayList<>();
 

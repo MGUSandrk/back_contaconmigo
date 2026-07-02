@@ -112,5 +112,4 @@ public class SaleResource {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

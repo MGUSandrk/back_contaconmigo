@@ -1,5 +1,6 @@
 package com.sistema_contable.sistema.contable.services.accounting;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,12 @@ import com.sistema_contable.sistema.contable.services.accounting.interfaces.Move
 
 @Service
 public class AccountServiceImp implements AccountService {
+
+    private static final List<String> SALES_OR_PURCHASE_ACCOUNT_NAMES = Arrays.asList(
+            "Ventas",
+            "Mercaderías",
+            "Costo de Mercaderías Vendidas"
+    );
 
     @Autowired
     private AccountRepository repository;
@@ -54,7 +61,7 @@ public class AccountServiceImp implements AccountService {
     public void delete(Long id)throws Exception{
         if(this.existAccountById(id)){
             Account account = this.searchById(id);
-            if(this.accountUsedInMovements(account) || !account.getSubAccounts().isEmpty()){
+            if(this.accountUsedInMovements(account) || !account.getSubAccounts().isEmpty() || this.isSalesOrPurchaseAccount(id)){
                 //logic delete
                 account.desactivate();
                 repository.save(account);}
@@ -74,7 +81,7 @@ public class AccountServiceImp implements AccountService {
     //update the name of the account
     @Override
     public void update(Long id, String nombre) throws Exception {
-        if(this.searchByName(nombre)!=null){throw new BadAccountException("ERROR : Account not found to UPDATE");}
+        if(this.searchByName(nombre)!=null || this.isSalesOrPurchaseAccount(id)){throw new BadAccountException("ERROR : Error to UPDATE account name");}
         Account account = this.searchById(id);
         account.setName(nombre);
         repository.save(account);}
@@ -109,6 +116,13 @@ public class AccountServiceImp implements AccountService {
     @Override
     public Double results() throws Exception {
         return lastBalance(4L)-lastBalance(5L);
+    }
+
+    //detect if the account is used by sales, purchases or CMV automatic movements
+    @Override
+    public Boolean isSalesOrPurchaseAccount(Long id) throws Exception {
+        Account account = this.searchById(id);
+        return SALES_OR_PURCHASE_ACCOUNT_NAMES.contains(account.getName().strip());
     }
 
     //calculate the equity

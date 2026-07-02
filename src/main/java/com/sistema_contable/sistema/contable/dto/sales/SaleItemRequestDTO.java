@@ -1,6 +1,6 @@
 package com.sistema_contable.sistema.contable.dto.sales;
 
-public class SaleItemDTO {
+public class SaleItemRequestDTO {
 
     private Long productId;
     private Integer quantity;

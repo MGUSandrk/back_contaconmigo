@@ -7,7 +7,7 @@ import com.sistema_contable.sistema.contable.model.sales.InvoiceType;
 public class SaleRequestDTO {
 
     private Long clientId;
-    private List<SaleItemDTO> items;
+    private List<SaleItemRequestDTO> items;
     private String paymentMethod;
     private Integer installments;
     private Double discount;
@@ -21,11 +21,11 @@ public class SaleRequestDTO {
         this.clientId = clientId;
     }
 
-    public List<SaleItemDTO> getItems() {
+    public List<SaleItemRequestDTO> getItems() {
         return items;
     }
 
-    public void setItems(List<SaleItemDTO> items) {
+    public void setItems(List<SaleItemRequestDTO> items) {
         this.items = items;
     }
 

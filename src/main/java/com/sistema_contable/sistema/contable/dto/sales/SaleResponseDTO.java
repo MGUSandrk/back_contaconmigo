@@ -1,6 +1,8 @@
 package com.sistema_contable.sistema.contable.dto.sales;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class SaleResponseDTO {
 
@@ -13,6 +15,7 @@ public class SaleResponseDTO {
     private Long entityId;
     private String entityName;
     private Double totalPrice;
+    private List<SaleItemResponseDTO> products = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -85,4 +88,9 @@ public class SaleResponseDTO {
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
     }
+
+    public List<SaleItemResponseDTO> getProducts() {
+        return products;
+    }
+
 }
