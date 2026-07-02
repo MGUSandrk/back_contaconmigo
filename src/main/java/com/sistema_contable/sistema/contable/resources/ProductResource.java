@@ -18,15 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sistema_contable.sistema.contable.dto.LotRequestDTO;
 import com.sistema_contable.sistema.contable.dto.LotResponseDTO;
-import com.sistema_contable.sistema.contable.dto.PaymentRequestDTO;
+import com.sistema_contable.sistema.contable.dto.ProductLotRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentRequestDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
 import com.sistema_contable.sistema.contable.model.Lot;
 import com.sistema_contable.sistema.contable.model.Product;
 import com.sistema_contable.sistema.contable.model.User;
 import com.sistema_contable.sistema.contable.model.sales.Payment;
-import com.sistema_contable.sistema.contable.services.GoodsAccountingService;
 import com.sistema_contable.sistema.contable.services.interfaces.PaymentTypeService;
 import com.sistema_contable.sistema.contable.services.interfaces.ProductService;
 import com.sistema_contable.sistema.contable.services.security.interfaces.AuthorizationService;
@@ -42,8 +42,6 @@ public class ProductResource {
     @Autowired
     private AuthorizationService authService;
     @Autowired
-    private GoodsAccountingService goodsAccountingService;
-    @Autowired
     private PaymentTypeService paymentTypeService;
 
     //endpoints
@@ -53,12 +51,31 @@ public class ProductResource {
             User userDB = authService.adminAuthorize(token);
             Product product = productRequest(productDTO);
             List<Payment> payments = paymentRequest(productDTO != null ? productDTO.getPayments() : null);
-            goodsAccountingService.purchaseGoodsAccounting(payments, product, userDB);
-            service.create(product);
+            service.create(product, payments, userDB);
             return new ResponseEntity<>(null, HttpStatus.CREATED);
         } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
             return new ResponseEntity<>(null, modelError.getHttpStatus());
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/{id}/lot")
+    public ResponseEntity<?> addLot(@RequestHeader("Authorization") String token, @PathVariable Long id,
+            @RequestBody ProductLotRequestDTO dto) {
+        try {
+            User userDB = authService.adminAuthorize(token);
+            Lot lot = lotRequest(dto != null ? dto.getLot() : null);
+            List<Payment> payments = paymentRequest(dto != null ? dto.getPayments() : null);
+            service.addLot(id, lot, payments, userDB);
+            return new ResponseEntity<>(null, HttpStatus.CREATED);
+        } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
+            return new ResponseEntity<>(null, modelError.getHttpStatus());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -68,6 +85,19 @@ public class ProductResource {
         try {
             authService.sellerAuthorize(token);
             return new ResponseEntity<>(productResponse(service.getAll()), HttpStatus.OK);
+        } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
+            return new ResponseEntity<>(null, modelError.getHttpStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/with-stock", produces = "application/json")
+    public ResponseEntity<?> getAllWithStock(@RequestHeader("Authorization") String token) {
+        try {
+            authService.sellerAuthorize(token);
+            return new ResponseEntity<>(productResponse(service.getAllWithStock()), HttpStatus.OK);
         } catch (ModelExceptions modelError) {
             System.out.println(modelError.getMessage());
             return new ResponseEntity<>(null, modelError.getHttpStatus());
@@ -98,13 +128,9 @@ public class ProductResource {
         Product product = new Product();
         product.setName(dto.getName());
         product.setSalePrice(dto.getSalePrice());
-        if (dto.getLots() != null) {
-            for (LotRequestDTO lotDTO : dto.getLots()) {
-                Lot lot = lotRequest(lotDTO);
-                if (lot != null) {
-                    product.addLot(lot);
-                }
-            }
+        Lot lot = lotRequest(dto.getLot());
+        if (lot != null) {
+            product.addLot(lot);
         }
         return product;
     }

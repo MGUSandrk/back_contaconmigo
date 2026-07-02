@@ -2,12 +2,14 @@ package com.sistema_contable.sistema.contable.dto;
 
 import java.util.List;
 
+import com.sistema_contable.sistema.contable.dto.sales.PaymentRequestDTO;
+
 public class ProductRequestDTO {
 
     private String name;
     private Double salePrice;
-    private List<LotRequestDTO> lots;
-    private List<PaymentRequestDTO> payments;
+    private LotRequestDTO lot;
+    private List <PaymentRequestDTO> payments;
 
     public String getName() {
         return name;
@@ -25,19 +27,19 @@ public class ProductRequestDTO {
         this.salePrice = salePrice;
     }
 
-    public List<LotRequestDTO> getLots() {
-        return lots;
+    public LotRequestDTO getLot() {
+        return lot;
     }
 
-    public void setLots(List<LotRequestDTO> lots) {
-        this.lots = lots;
+    public void setLot(LotRequestDTO lot) {
+        this.lot = lot;
     }
 
-    public List<PaymentRequestDTO> getPayments() {
+    public List <PaymentRequestDTO> getPayments() {
         return payments;
     }
 
-    public void setPayments(List<PaymentRequestDTO> payments) {
+    public void setPayments(List <PaymentRequestDTO> payments) {
         this.payments = payments;
     }
 }

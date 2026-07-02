@@ -1,8 +1,8 @@
 package com.sistema_contable.sistema.contable.services.interfaces;
 
-import com.sistema_contable.sistema.contable.model.Client;
-
 import java.util.List;
+
+import com.sistema_contable.sistema.contable.model.sales.Client;
 
 public interface ClientService {
     void create(Client client) throws Exception;

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.sistema_contable.sistema.contable.model.CostingMethodType;
 import com.sistema_contable.sistema.contable.model.EntityModel;
 import com.sistema_contable.sistema.contable.model.Role;
 import com.sistema_contable.sistema.contable.model.User;
@@ -13,7 +14,6 @@ import com.sistema_contable.sistema.contable.model.VatCondition;
 import com.sistema_contable.sistema.contable.model.accounting.Account;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.accounting.ControlAccount;
-import com.sistema_contable.sistema.contable.model.CostingMethodType;
 import com.sistema_contable.sistema.contable.services.accounting.interfaces.AccountService;
 import com.sistema_contable.sistema.contable.services.interfaces.EntityService;
 import com.sistema_contable.sistema.contable.services.interfaces.UserService;
@@ -113,7 +113,7 @@ public class DataInitializer implements CommandLineRunner {
         capital.setName("Capital");
         accountService.create(capital,3L);
 
-        Account ventas = new ControlAccount();
+        Account ventas = new BalanceAccount();
         ventas.setName("Ventas");
         accountService.create(ventas, 4L);
 
@@ -121,11 +121,15 @@ public class DataInitializer implements CommandLineRunner {
         otrosing.setName("Otros ingresos");
         accountService.create(otrosing, 4L);
 
+        Account costoMercaderiasVendidas = new BalanceAccount();
+        costoMercaderiasVendidas.setName("Costo de Mercaderías Vendidas");
+        accountService.create(costoMercaderiasVendidas, 5L);
+
         EntityModel entity = new EntityModel();
         entity.setName("Empresa");
         entity.setCostingMethod(CostingMethodType.FIFO);
-        entity.setCuit("00000000000");
-        entity.setCommercialAddress("No configurado");
+        entity.setCuit("12345678901");
+        entity.setCommercialAddress("Esmeralda 123");
         entity.setGrossIncomeNumber("NO CONTRIBUYENTE");
         entity.setVatCondition(VatCondition.IVA_RESPONSABLE_INSCRIPTO);
         entity.setActivityStartDate(new Date());

@@ -2,8 +2,8 @@ package com.sistema_contable.sistema.contable.dto;
 
 import java.util.Date;
 
-import com.sistema_contable.sistema.contable.model.VatCondition;
 import com.sistema_contable.sistema.contable.model.CostingMethodType;
+import com.sistema_contable.sistema.contable.model.VatCondition;
 
 public class EntityResponseDTO {
 

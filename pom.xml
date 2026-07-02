@@ -31,6 +31,8 @@
 	</properties>
 	<dependencies>
 
+			
+
     	<dependency>
     		<groupId>org.springframework.boot</groupId>
     		<artifactId>spring-boot-starter-actuator</artifactId>
@@ -81,8 +83,20 @@
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>3.2.1</version>
-
         </dependency>
+
+				<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-thymeleaf</artifactId>
+				</dependency>
+
+				<!-- OpenHTMLtoPDF para convertir HTML a PDF -->
+				<dependency>
+						<groupId>io.github.openhtmltopdf</groupId>
+						<artifactId>openhtmltopdf-pdfbox</artifactId>
+						<version>1.1.37</version>
+				</dependency>
+
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>

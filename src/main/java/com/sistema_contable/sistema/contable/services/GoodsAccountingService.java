@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.sistema_contable.sistema.contable.model.Product;
 import com.sistema_contable.sistema.contable.model.User;
+import com.sistema_contable.sistema.contable.model.Lot;
 import com.sistema_contable.sistema.contable.model.accounting.Account;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.accounting.Entry;
@@ -52,6 +53,33 @@ public class GoodsAccountingService {
     }
 
     entry.setDescription("Compra de mercaderías: " + product.getName());
+    entry.setMovements(movements);
+
+    entryService.create(entry, user);
+  }
+
+  public void purchaseLotAccounting(List<Payment> payments, Product product, Lot lot, User user) throws Exception {
+    Entry entry = new Entry();
+    List<Movement> movements = new ArrayList<>();
+
+    Account goodsData = accountService.searchByName("Mercaderías");
+    BalanceAccount goods = accountService.searchBalanceAccount(goodsData.getId());
+
+    Movement goodsMovement = new Movement();
+    goodsMovement.setAccount(goods);
+    goodsMovement.setDebit(lot.getUnitPrice() * lot.getStock());
+    goodsMovement.setCredit(0.0);
+    movements.add(goodsMovement);
+
+    for (Payment payment : payments) {
+      Movement paymentMovement = new Movement();
+      paymentMovement.setAccount(payment.getPaymentType().getAccount());
+      paymentMovement.setCredit(payment.getAmount());
+      paymentMovement.setDebit(0.0);
+      movements.add(paymentMovement);
+    }
+
+    entry.setDescription("Compra de lote de mercaderías: " + product.getName());
     entry.setMovements(movements);
 
     entryService.create(entry, user);

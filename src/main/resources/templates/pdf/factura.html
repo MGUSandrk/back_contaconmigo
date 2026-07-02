@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #111;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #222;
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eee;
+            font-weight: bold;
+        }
+
+        .no-border td {
+            border: none;
+            padding: 0;
+        }
+
+        .header {
+            border: 2px solid #111;
+        }
+
+        .issuer,
+        .voucher {
+            width: 43%;
+            padding: 12px;
+        }
+
+        .type-cell {
+            width: 14%;
+            text-align: center;
+            border-left: 2px solid #111;
+            border-right: 2px solid #111;
+            padding: 0;
+        }
+
+        .type-box {
+            border: 2px solid #111;
+            display: inline-block;
+            font-size: 34px;
+            font-weight: bold;
+            line-height: 46px;
+            margin-top: 10px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .type-label {
+            font-size: 9px;
+            margin-top: 4px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: right;
+        }
+
+        .business-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .section {
+            margin-top: 12px;
+        }
+
+        .section-title {
+            background: #eee;
+            border: 1px solid #222;
+            border-bottom: none;
+            font-weight: bold;
+            padding: 5px 7px;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .totals {
+            margin-left: auto;
+            width: 42%;
+        }
+
+        .totals td {
+            padding: 7px;
+        }
+
+        .total-row td {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .footer-box {
+            border: 2px solid #111;
+            margin-top: 18px;
+            padding: 10px;
+        }
+
+        .qr-cell {
+            width: 110px;
+        }
+
+        .qr {
+            border: 1px solid #111;
+            height: 96px;
+            width: 96px;
+        }
+
+        .legend {
+            border: 1px solid #222;
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 12px;
+            padding: 7px;
+            text-align: center;
+        }
+
+        .muted {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tbody>
+            <tr>
+                <td class="issuer">
+                    <div class="business-name" th:text="${factura.entityName != null ? factura.entityName : 'Entidad'}">Entidad</div>
+                    <div>
+                        <strong>Razon Social:</strong>
+                        <span th:text="${factura.entityName != null ? factura.entityName : '-'}">Entidad</span>
+                    </div>
+                    <div>
+                        <strong>Domicilio Comercial:</strong>
+                        <span th:text="${factura.entityCommercialAddress != null ? factura.entityCommercialAddress : '-'}">Domicilio</span>
+                    </div>
+                    <div>
+                        <strong>Condicion frente al IVA:</strong>
+                        <span th:text="${factura.entityVatCondition != null ? factura.entityVatCondition : '-'}">IVA</span>
+                    </div>
+                    <div>
+                        <strong>Ingresos Brutos:</strong>
+                        <span th:text="${factura.entityGrossIncomeNumber != null ? factura.entityGrossIncomeNumber : '-'}">IIBB</span>
+                    </div>
+                    <div>
+                        <strong>Inicio de Actividades:</strong>
+                        <span th:text="${factura.entityActivityStartDate != null ? #dates.format(factura.entityActivityStartDate, 'dd/MM/yyyy') : '-'}">01/01/2026</span>
+                    </div>
+                </td>
+                <td class="type-cell">
+                    <div class="type-box" th:text="${factura.invoiceType != null ? factura.invoiceType : 'B'}">B</div>
+                    <div class="type-label">COD. SIMULADO</div>
+                </td>
+                <td class="voucher">
+                    <div class="title">FACTURA</div>
+                    <div>
+                        <strong>Punto de Venta:</strong>
+                        <span th:text="${factura.salesPoint != null ? #numbers.formatInteger(factura.salesPoint, 5) : '00001'}">00001</span>
+                    </div>
+                    <div>
+                        <strong>Comp. Nro:</strong>
+                        <span th:text="${factura.legalInvoiceNumber != null ? factura.legalInvoiceNumber : factura.invoiceNumber}">00001-00000001</span>
+                    </div>
+                    <div>
+                        <strong>Fecha de Emision:</strong>
+                        <span th:text="${factura.dateCreated != null ? #dates.format(factura.dateCreated, 'dd/MM/yyyy') : '-'}">01/01/2026</span>
+                    </div>
+                    <div>
+                        <strong>CUIT:</strong>
+                        <span th:text="${factura.entityCuit != null ? factura.entityCuit : '-'}">CUIT</span>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section">
+        <div class="section-title">Datos del cliente</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Apellido y Nombre / Razon Social:</strong>
+                        <span th:text="${factura.clientFullName != null ? factura.clientFullName : 'Consumidor Final'}">Cliente</span>
+                    </td>
+                    <td>
+                        <strong>CUIT:</strong>
+                        <span th:text="${factura.clientCuit != null ? factura.clientCuit : '-'}">CUIT</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Condicion frente al IVA:</strong>
+                        <span>Consumidor Final</span>
+                    </td>
+                    <td>
+                        <strong>Vendedor:</strong>
+                        <span th:text="${factura.sellerFullName != null ? factura.sellerFullName : '-'}">Vendedor</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Condicion de venta:</strong>
+                        <span th:text="${factura.paymentMethod != null ? factura.paymentMethod : '-'}">Efectivo</span>
+                    </td>
+                    <td>
+                        <strong>Cuotas:</strong>
+                        <span th:text="${factura.installments != null ? factura.installments : 1}">1</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Codigo</th>
+                    <th>Producto / Servicio</th>
+                    <th class="right">Cantidad</th>
+                    <th class="right">Precio Unit.</th>
+                    <th class="right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${factura.items}">
+                    <td th:text="${item.productId != null ? item.productId : '-'}">1</td>
+                    <td th:text="${item.productName != null ? item.productName : '-'}">Producto</td>
+                    <td class="right" th:text="${item.quantity != null ? item.quantity : 0}">1</td>
+                    <td class="right" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 1, 2) : '0.00'}">0.00</td>
+                    <td class="right" th:text="${item.subtotal != null ? #numbers.formatDecimal(item.subtotal, 1, 2) : '0.00'}">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <table class="totals">
+            <tbody>
+                <tr>
+                    <td>Subtotal</td>
+                    <td class="right" th:text="${factura.subtotal != null ? #numbers.formatDecimal(factura.subtotal, 1, 2) : '0.00'}">0.00</td>
+                </tr>
+                <tr>
+                    <td>Descuento</td>
+                    <td class="right" th:text="${factura.discountAmount != null ? #numbers.formatDecimal(factura.discountAmount, 1, 2) : '0.00'}">0.00</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total</td>
+                    <td class="right" th:text="${factura.total != null ? #numbers.formatDecimal(factura.total, 1, 2) : '0.00'}">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-box">
+        <table class="no-border">
+            <tbody>
+                <tr>
+                    <td class="qr-cell">
+                        <img class="qr" th:if="${factura.qrCodeBase64 != null}" th:src="${factura.qrCodeBase64}" alt="QR" />
+                    </td>
+                    <td>
+                        <div><strong>CAE:</strong> <span th:text="${factura.cae != null ? factura.cae : '-'}">70417054367476</span></div>
+                        <div>
+                            <strong>Fecha Vto. CAE:</strong>
+                            <span th:text="${factura.caeExpirationDate != null ? #dates.format(factura.caeExpirationDate, 'dd/MM/yyyy') : '-'}">11/01/2026</span>
+                        </div>
+                        <div class="muted">QR y datos fiscales generados solo con fines educativos.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="legend">COMPROBANTE EDUCATIVO SIN VALIDEZ FISCAL</div>
+</body>
+</html>

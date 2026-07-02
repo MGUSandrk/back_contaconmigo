@@ -62,6 +62,9 @@ public class Product {
     }
 
     public void addLot(Lot lot){
+        if (this.lots == null) {
+            this.lots = new ArrayList<>();
+        }
         this.getLots().add(lot);
         lot.setProduct(this);
     }

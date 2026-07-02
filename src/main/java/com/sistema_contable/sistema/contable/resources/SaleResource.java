@@ -1,6 +1,8 @@
 package com.sistema_contable.sistema.contable.resources;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistema_contable.sistema.contable.dto.InvoiceResponseDTO;
-import com.sistema_contable.sistema.contable.dto.SaleRequestDTO;
-import com.sistema_contable.sistema.contable.dto.SaleResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
 import com.sistema_contable.sistema.contable.model.User;
 import com.sistema_contable.sistema.contable.services.interfaces.SaleService;
@@ -55,6 +57,23 @@ public class SaleResource {
             authService.authorize(token);
             List<SaleResponseDTO> sales = saleService.getAllSales();
             return new ResponseEntity<>(sales, HttpStatus.OK);
+        } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
+            return new ResponseEntity<>(null, modelError.getHttpStatus());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/month/count")
+    public ResponseEntity<?> countSalesOfCurrentMonth(@RequestHeader("Authorization") String token) {
+        try {
+            authService.authorize(token);
+            Long count = saleService.countSalesOfCurrentMonth();
+            Map<String, Long> response = new HashMap<>();
+            response.put("count", count);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (ModelExceptions modelError) {
             System.out.println(modelError.getMessage());
             return new ResponseEntity<>(null, modelError.getHttpStatus());
