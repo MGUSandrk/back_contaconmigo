@@ -38,7 +38,7 @@ public class ClientResource {
     @PostMapping(path = "/create")
     public ResponseEntity<?> create(@RequestHeader("Authorization") String token, @RequestBody ClientRequestDTO clientDTO) {
         try {
-            authService.adminAuthorize(token);
+            authService.authorize(token);
             service.create(clientRequest(clientDTO));
             return new ResponseEntity<>(null, HttpStatus.CREATED);
         } catch (ModelExceptions modelError) {
