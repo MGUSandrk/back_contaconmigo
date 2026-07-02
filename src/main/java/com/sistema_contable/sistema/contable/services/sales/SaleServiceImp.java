@@ -5,16 +5,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.sistema_contable.sistema.contable.model.sales.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sistema_contable.sistema.contable.dto.sales.InvoiceItemResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentDetailResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentMethodDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleItemRequestDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleItemResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
+import com.sistema_contable.sistema.contable.exceptions.sales.BadSaleException;
 import com.sistema_contable.sistema.contable.exceptions.sales.ClientNotFoundException;
 import com.sistema_contable.sistema.contable.exceptions.sales.InsufficientStockException;
 import com.sistema_contable.sistema.contable.model.CostingMethodType;
@@ -26,13 +30,6 @@ import com.sistema_contable.sistema.contable.model.accounting.Account;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.accounting.Entry;
 import com.sistema_contable.sistema.contable.model.accounting.Movement;
-import com.sistema_contable.sistema.contable.model.sales.Client;
-import com.sistema_contable.sistema.contable.model.sales.Invoice;
-import com.sistema_contable.sistema.contable.model.sales.InvoiceItem;
-import com.sistema_contable.sistema.contable.model.sales.InvoiceType;
-import com.sistema_contable.sistema.contable.model.sales.Payment;
-import com.sistema_contable.sistema.contable.model.sales.Sale;
-import com.sistema_contable.sistema.contable.model.sales.SaleProduct;
 import com.sistema_contable.sistema.contable.repository.InvoiceRepository;
 import com.sistema_contable.sistema.contable.repository.LotRepository;
 import com.sistema_contable.sistema.contable.repository.PaymentTypeRepository;
@@ -110,10 +107,33 @@ public class SaleServiceImp implements SaleService {
             lotCosts.addCost(itemCost);
         }
 
+        // Calculate gross total (before discount)
+        Double grossTotal = subtotal;
+        
         // Apply discount
         Double discountAmount = (saleRequestDTO.getDiscount() != null) ? 
-            (subtotal * saleRequestDTO.getDiscount() / 100) : 0.0;
-        Double total = subtotal - discountAmount;
+            (grossTotal * saleRequestDTO.getDiscount() / 100) : 0.0;
+        
+        // Calculate total paid from payment methods
+        Double totalPaid = 0.0;
+        if (saleRequestDTO.getPayments() != null && !saleRequestDTO.getPayments().isEmpty()) {
+            for (PaymentMethodDTO paymentDTO : saleRequestDTO.getPayments()) {
+                totalPaid += paymentDTO.getAmount();
+            }
+        }
+        
+        // Validate that total paid + discount equals gross total (double-entry validation)
+        double tolerance = 0.01;
+        if (Math.abs((totalPaid + discountAmount) - grossTotal) > tolerance) {
+            throw new BadSaleException(
+                "ERROR : Payment validation failed. Gross Total: " + grossTotal + 
+                ", Discount: " + discountAmount + 
+                ", Total Paid: " + totalPaid + 
+                ". Sum of payments and discount must equal gross total."
+            );
+        }
+        
+        Double total = totalPaid;
 
         // Create Sale
         Sale sale = new Sale();
@@ -135,14 +155,18 @@ public class SaleServiceImp implements SaleService {
             sale.getSaleProducts().add(saleProduct);
         }
 
-        // Create Payment
-        Payment payment = new Payment();
-        payment.setAmount(total);
-        payment.setPaymentType(paymentTypeRepository.searchByName(saleRequestDTO.getPaymentMethod()));
-        if (payment.getPaymentType() == null) {
-            throw new RuntimeException("ERROR : Payment type not found: " + saleRequestDTO.getPaymentMethod());
+        // Create Payments for each payment method
+        if (saleRequestDTO.getPayments() != null && !saleRequestDTO.getPayments().isEmpty()) {
+            for (PaymentMethodDTO paymentDTO : saleRequestDTO.getPayments()) {
+                Payment payment = new Payment();
+                payment.setAmount(paymentDTO.getAmount());
+                payment.setPaymentType(paymentTypeRepository.searchByName(paymentDTO.getMethod()));
+                if (payment.getPaymentType() == null) {
+                    throw new BadSaleException("ERROR : Payment type not found: " + paymentDTO.getMethod());
+                }
+                sale.getPayments().add(payment);
+            }
         }
-        sale.getPayments().add(payment);
 
         saleRepository.save(sale);
 
@@ -151,12 +175,12 @@ public class SaleServiceImp implements SaleService {
 
         // Create Invoice (immutable snapshot)
         InvoiceType invoiceType = InvoiceTypeResolver.resolve(entity.getVatCondition(), client.getVatCondition());
-        Invoice invoice = createInvoice(sale, client, seller, entity, subtotal, discountAmount, total, 
+        Invoice invoice = createInvoice(sale, client, seller, entity, grossTotal, discountAmount, total, 
                 saleRequestDTO, lotCosts.getTotalCost(), invoiceType);
         invoiceRepository.save(invoice);
 
-        // Create accounting entry for sale
-        createSaleEntry(sale, seller, payment.getPaymentType().getAccount());
+        // Create accounting entry for sale with multiple payment methods
+        createSaleEntry(sale, seller, saleRequestDTO.getPayments(), grossTotal, discountAmount);
 
         // Create accounting entry for CMV
         createCMVEntry(sale, seller, lotCosts.getTotalCost());
@@ -264,7 +288,6 @@ public class SaleServiceImp implements SaleService {
         dto.setSubtotal(invoice.getSubtotal());
         dto.setDiscountAmount(invoice.getDiscountAmount());
         dto.setTotal(invoice.getTotal());
-        dto.setPaymentMethod(invoice.getPaymentMethod());
         dto.setInstallments(invoice.getInstallments());
         dto.setCostingMethod(invoice.getCostingMethod());
         dto.setCmvAmount(invoice.getCmvAmount());
@@ -274,6 +297,9 @@ public class SaleServiceImp implements SaleService {
         dto.setQrCodeBase64(invoice.getQrCodeBase64());
         if (invoice.getItems() != null) {
             dto.setItems(invoice.getItems().stream().map(this::mapToInvoiceItemResponseDTO).toList());
+        }
+        if (invoice.getPaymentDetails() != null) {
+            dto.setPaymentDetails(invoice.getPaymentDetails().stream().map(this::mapToPaymentDetailResponseDTO).toList());
         }
         return dto;
     }
@@ -286,6 +312,13 @@ public class SaleServiceImp implements SaleService {
         dto.setQuantity(invoiceItem.getQuantity());
         dto.setUnitPrice(invoiceItem.getUnitPrice());
         dto.setSubtotal(invoiceItem.getSubtotal());
+        return dto;
+    }
+
+    private PaymentDetailResponseDTO mapToPaymentDetailResponseDTO(PaymentDetail paymentDetail) {
+        PaymentDetailResponseDTO dto = new PaymentDetailResponseDTO();
+        dto.setMethod(paymentDetail.getMethod());
+        dto.setAmount(paymentDetail.getAmount());
         return dto;
     }
 
@@ -355,44 +388,83 @@ public class SaleServiceImp implements SaleService {
     private Invoice createInvoice(Sale sale, Client client, User seller, EntityModel entity, 
             Double subtotal, Double discountAmount, Double total, SaleRequestDTO saleRequestDTO, 
             Double cmvAmount, InvoiceType invoiceType) {
-        return Invoice.fromSale(
+        // Step 1: Create the real invoice with empty payment details list
+        Invoice invoice = Invoice.fromSale(
                 sale,
                 client,
                 seller,
                 entity,
                 invoiceType,
-                saleRequestDTO.getPaymentMethod(),
                 saleRequestDTO.getInstallments(),
                 subtotal,
                 discountAmount,
                 total,
-                cmvAmount);
+                cmvAmount,
+                new ArrayList<>());
+        
+        // Step 2: Create PaymentDetails with reference to the real invoice
+        if (saleRequestDTO.getPayments() != null && !saleRequestDTO.getPayments().isEmpty()) {
+            for (PaymentMethodDTO paymentDTO : saleRequestDTO.getPayments()) {
+                PaymentDetail paymentDetail = new PaymentDetail(
+                    invoice, 
+                    paymentDTO.getMethod(), 
+                    paymentDTO.getAmount()
+                );
+                invoice.getPaymentDetails().add(paymentDetail);
+            }
+        }
+        
+        // Step 3: Return the real invoice with payment details
+        return invoice;
     }
 
-    private void createSaleEntry(Sale sale, User seller, BalanceAccount paymentAccount) throws Exception {
+    private void createSaleEntry(Sale sale, User seller, List<PaymentMethodDTO> payments, 
+            Double grossTotal, Double discountAmount) throws Exception {
         Entry entry = new Entry();
         entry.setDescription("Venta #" + sale.getId() + " - " + sale.getClient().getFullName());
         
         List<Movement> movements = new ArrayList<>();
 
-        // Debit: Payment account (Caja, Banco, etc.)
-        Movement debitMovement = new Movement();
-        debitMovement.setAccount(paymentAccount);
-        debitMovement.setDebit(sale.getTotalPrice());
-        debitMovement.setCredit(0.0);
-        movements.add(debitMovement);
+        // Debit: Payment accounts (Caja, Banco, etc.) - one for each payment method
+        for (PaymentMethodDTO paymentDTO : payments) {
+            PaymentType paymentType = paymentTypeRepository.searchByName(paymentDTO.getMethod());
+            if (paymentType == null || paymentType.getAccount() == null) {
+                throw new BadSaleException("ERROR : Payment type or account not found for: " + paymentDTO.getMethod());
+            }
+            
+            Movement debitMovement = new Movement();
+            debitMovement.setAccount(paymentType.getAccount());
+            debitMovement.setDebit(paymentDTO.getAmount());
+            debitMovement.setCredit(0.0);
+            movements.add(debitMovement);
+        }
 
-        // Credit: Sales account
+        // Debit: Discounts Granted account (Resultado Negativo) - only if discount > 0
+        if (discountAmount > 0) {
+            Account discountData = accountService.searchByName("Descuentos Otorgados");
+            if (discountData == null) {
+                throw new BadSaleException("ERROR : Discounts Granted account not found");
+            }
+            BalanceAccount discountAccount = accountService.searchBalanceAccount(discountData.getId());
+            
+            Movement discountMovement = new Movement();
+            discountMovement.setAccount(discountAccount);
+            discountMovement.setDebit(discountAmount);
+            discountMovement.setCredit(0.0);
+            movements.add(discountMovement);
+        }
+
+        // Credit: Sales account (Ventas) - for the gross total
         Account salesData = accountService.searchByName("Ventas");
         if (salesData == null) {
-            throw new RuntimeException("ERROR : Sales account not found");
+            throw new BadSaleException("ERROR : Sales account not found");
         }
         BalanceAccount salesAccount = accountService.searchBalanceAccount(salesData.getId());
         
         Movement creditMovement = new Movement();
         creditMovement.setAccount(salesAccount);
         creditMovement.setDebit(0.0);
-        creditMovement.setCredit(sale.getTotalPrice());
+        creditMovement.setCredit(grossTotal);
         movements.add(creditMovement);
 
         entry.setMovements(movements);
@@ -405,7 +477,7 @@ public class SaleServiceImp implements SaleService {
         
         List<Movement> movements = new ArrayList<>();
 
-        // Debit: CMV account (Resultado Negativo) TODO Revisar el nombre que se le va a poner a la cuenta de costo de mercaderías vendidas
+        // Debit: CMV account (Resultado Negativo)
         Account expenseData = accountService.searchByName("Costo de Mercaderías Vendidas");
         if (expenseData == null) {
             throw new RuntimeException("ERROR : Expense account not found");

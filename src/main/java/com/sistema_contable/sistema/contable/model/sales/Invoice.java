@@ -82,15 +82,15 @@ public class Invoice {
     @Column(name = "total")
     private Double total;
 
-    @Column(name = "payment_method")
-    private String paymentMethod;
-
     @Column(name = "installments")
     private Integer installments;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "invoice_item_invoice_id")
     private List<InvoiceItem> items;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+    private List<PaymentDetail> paymentDetails;
 
     @Column(name = "costing_method")
     private String costingMethod;
@@ -114,8 +114,8 @@ public class Invoice {
     }
 
     public static Invoice fromSale(Sale sale, Client client, User seller, EntityModel entity,
-            InvoiceType invoiceType, String paymentMethod, Integer installments, Double subtotal,
-            Double discountAmount, Double total, Double cmvAmount) {
+            InvoiceType invoiceType, Integer installments, Double subtotal,
+            Double discountAmount, Double total, Double cmvAmount, List<PaymentDetail> paymentDetails) {
         Invoice invoice = new Invoice();
         invoice.setInvoiceNumber("INV-" + sale.getId());
         invoice.setInvoiceType(resolveInvoiceType(invoiceType));
@@ -133,9 +133,9 @@ public class Invoice {
         invoice.setSubtotal(subtotal);
         invoice.setDiscountAmount(discountAmount);
         invoice.setTotal(total);
-        invoice.setPaymentMethod(paymentMethod);
         invoice.setInstallments(installments);
         invoice.setItems(invoiceItemsFromSale(sale));
+        invoice.setPaymentDetails(paymentDetails);
         invoice.setCostingMethod(entity.getCostingMethod() != null ? entity.getCostingMethod().name() : null);
         invoice.setCmvAmount(cmvAmount);
         invoice.setLegalInvoiceNumber(legalInvoiceNumber(entity.getSalesPoint(), sale.getId()));
@@ -326,12 +326,12 @@ public class Invoice {
         this.total = total;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public List<PaymentDetail> getPaymentDetails() {
+        return paymentDetails;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPaymentDetails(List<PaymentDetail> paymentDetails) {
+        this.paymentDetails = paymentDetails;
     }
 
     public Integer getInstallments() {

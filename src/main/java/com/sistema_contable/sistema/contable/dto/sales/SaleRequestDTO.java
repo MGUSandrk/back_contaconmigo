@@ -8,7 +8,7 @@ public class SaleRequestDTO {
 
     private Long clientId;
     private List<SaleItemRequestDTO> items;
-    private String paymentMethod;
+    private List<PaymentMethodDTO> payments;
     private Integer installments;
     private Double discount;
     private InvoiceType invoiceType;
@@ -29,12 +29,12 @@ public class SaleRequestDTO {
         this.items = items;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public List<PaymentMethodDTO> getPayments() {
+        return payments;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPayments(List<PaymentMethodDTO> payments) {
+        this.payments = payments;
     }
 
     public Integer getInstallments() {

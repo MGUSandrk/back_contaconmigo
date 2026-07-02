@@ -229,7 +229,14 @@
                 <tr>
                     <td>
                         <strong>Condicion de venta:</strong>
-                        <span th:text="${factura.paymentMethod != null ? factura.paymentMethod : '-'}">Efectivo</span>
+                        <span th:if="${factura.paymentDetails != null and !factura.paymentDetails.empty}">
+                            <span th:each="payment, stat : ${factura.paymentDetails}">
+                                <span th:text="${payment.method} + ' ($' + ${#numbers.formatDecimal(payment.amount, 1, 2)} + ')'" th:unless="${stat.last}">Efectivo ($10000.00)</span>
+                                <span th:text="${payment.method} + ' ($' + ${#numbers.formatDecimal(payment.amount, 1, 2)} + ')'" th:if="${stat.last}">Efectivo ($10000.00)</span>
+                                <span th:if="${not stat.last}">, </span>
+                            </span>
+                        </span>
+                        <span th:if="${factura.paymentDetails == null or factura.paymentDetails.empty}">-</span>
                     </td>
                     <td>
                         <strong>Cuotas:</strong>

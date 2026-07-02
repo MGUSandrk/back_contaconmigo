@@ -24,9 +24,9 @@ public class InvoiceResponseDTO {
     private Double subtotal;
     private Double discountAmount;
     private Double total;
-    private String paymentMethod;
     private Integer installments;
     private List<InvoiceItemResponseDTO> items;
+    private List<PaymentDetailResponseDTO> paymentDetails;
     private String costingMethod;
     private Double cmvAmount;
     private String legalInvoiceNumber;
@@ -170,12 +170,12 @@ public class InvoiceResponseDTO {
         this.total = total;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public List<PaymentDetailResponseDTO> getPaymentDetails() {
+        return paymentDetails;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setPaymentDetails(List<PaymentDetailResponseDTO> paymentDetails) {
+        this.paymentDetails = paymentDetails;
     }
 
     public Integer getInstallments() {
