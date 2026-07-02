@@ -34,10 +34,10 @@ public class ProductServiceImp implements ProductService {
     @Override
     @Transactional
     public Product create(Product product, List<Payment> payments, User user) throws Exception {
-        Product savedProduct = saveNewProduct(product);
-        Lot lot = savedProduct.getLots().get(0);
+        Lot lot = product.getLots().get(0);
         validatePayments(payments, lot);
-        goodsAccountingService.purchaseLotAccounting(payments, savedProduct, lot, user);
+        goodsAccountingService.purchaseLotAccounting(payments, product, lot, user);
+        Product savedProduct = saveNewProduct(product);
         return savedProduct;
     }
 
@@ -82,6 +82,11 @@ public class ProductServiceImp implements ProductService {
     @Override
     public List<Product> getAll() throws Exception {
         return repository.findAll();
+    }
+
+    @Override
+    public List<Product> getAllWithStock() throws Exception {
+        return repository.findAllWithStock();
     }
 
     //SEARCHES

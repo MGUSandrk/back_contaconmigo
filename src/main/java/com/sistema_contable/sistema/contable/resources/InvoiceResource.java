@@ -46,7 +46,7 @@ public class InvoiceResource {
 
             return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
         } catch (ModelExceptions modelError) {
-            System.out.println(modelError.getMessage());
+            System.out.println("error: " + modelError.getMessage());
             return new ResponseEntity<>(null, modelError.getHttpStatus());
         } catch (Exception e) {
             System.out.println(e.getMessage());

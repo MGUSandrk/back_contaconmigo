@@ -93,6 +93,19 @@ public class ProductResource {
         }
     }
 
+    @GetMapping(path = "/with-stock", produces = "application/json")
+    public ResponseEntity<?> getAllWithStock(@RequestHeader("Authorization") String token) {
+        try {
+            authService.sellerAuthorize(token);
+            return new ResponseEntity<>(productResponse(service.getAllWithStock()), HttpStatus.OK);
+        } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
+            return new ResponseEntity<>(null, modelError.getHttpStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         try {

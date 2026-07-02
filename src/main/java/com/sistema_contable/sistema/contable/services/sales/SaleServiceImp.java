@@ -1,6 +1,7 @@
 package com.sistema_contable.sistema.contable.services.sales;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import com.sistema_contable.sistema.contable.model.accounting.Movement;
 import com.sistema_contable.sistema.contable.model.sales.Client;
 import com.sistema_contable.sistema.contable.model.sales.Invoice;
 import com.sistema_contable.sistema.contable.model.sales.InvoiceItem;
+import com.sistema_contable.sistema.contable.model.sales.InvoiceType;
 import com.sistema_contable.sistema.contable.model.sales.Payment;
 import com.sistema_contable.sistema.contable.model.sales.Sale;
 import com.sistema_contable.sistema.contable.model.sales.SaleProduct;
@@ -147,8 +149,9 @@ public class SaleServiceImp implements SaleService {
         deductStock(saleRequestDTO, costingMethod);
 
         // Create Invoice (immutable snapshot)
+        InvoiceType invoiceType = InvoiceTypeResolver.resolve(entity.getVatCondition(), client.getVatCondition());
         Invoice invoice = createInvoice(sale, client, seller, entity, subtotal, discountAmount, total, 
-                saleRequestDTO, lotCosts.getTotalCost());
+                saleRequestDTO, lotCosts.getTotalCost(), invoiceType);
         invoiceRepository.save(invoice);
 
         // Create accounting entry for sale
@@ -192,7 +195,32 @@ public class SaleServiceImp implements SaleService {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Long countSalesOfCurrentMonth() throws Exception {
+        Date startDate = getCurrentMonthStart();
+        Date endDate = getNextMonthStart(startDate);
+        return saleRepository.countSalesByDateCreatedBetween(startDate, endDate);
+    }
+
     //SECONDARY METHODS
+    private Date getCurrentMonthStart() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    private Date getNextMonthStart(Date startDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.MONTH, 1);
+        return calendar.getTime();
+    }
+
     private SaleResponseDTO mapToSaleResponseDTO(Sale sale) {
         SaleResponseDTO dto = new SaleResponseDTO();
         dto.setId(sale.getId());
@@ -316,13 +344,13 @@ public class SaleServiceImp implements SaleService {
 
     private Invoice createInvoice(Sale sale, Client client, User seller, EntityModel entity, 
             Double subtotal, Double discountAmount, Double total, SaleRequestDTO saleRequestDTO, 
-            Double cmvAmount) {
+            Double cmvAmount, InvoiceType invoiceType) {
         return Invoice.fromSale(
                 sale,
                 client,
                 seller,
                 entity,
-                saleRequestDTO.getInvoiceType(),
+                invoiceType,
                 saleRequestDTO.getPaymentMethod(),
                 saleRequestDTO.getInstallments(),
                 subtotal,

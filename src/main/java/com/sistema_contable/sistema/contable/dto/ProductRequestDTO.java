@@ -9,7 +9,7 @@ public class ProductRequestDTO {
     private String name;
     private Double salePrice;
     private LotRequestDTO lot;
-    private List<PaymentRequestDTO> payments;
+    private List <PaymentRequestDTO> payments;
 
     public String getName() {
         return name;
@@ -35,11 +35,11 @@ public class ProductRequestDTO {
         this.lot = lot;
     }
 
-    public List<PaymentRequestDTO> getPayments() {
+    public List <PaymentRequestDTO> getPayments() {
         return payments;
     }
 
-    public void setPayments(List<PaymentRequestDTO> payments) {
+    public void setPayments(List <PaymentRequestDTO> payments) {
         this.payments = payments;
     }
 }

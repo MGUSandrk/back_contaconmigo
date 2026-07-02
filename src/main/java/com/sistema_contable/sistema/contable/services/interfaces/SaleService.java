@@ -12,4 +12,5 @@ public interface SaleService {
     List<SaleResponseDTO> getAllSales() throws Exception;
     List<SaleResponseDTO> getSalesByClientId(Long clientId) throws Exception;
     List<InvoiceResponseDTO> getInvoicesByClientCuit(String clientCuit) throws Exception;
+    Long countSalesOfCurrentMonth() throws Exception;
 }

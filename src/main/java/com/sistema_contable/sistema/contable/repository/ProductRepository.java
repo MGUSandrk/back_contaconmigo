@@ -1,5 +1,7 @@
 package com.sistema_contable.sistema.contable.repository;
 
+import java.util.List;
+
 import com.sistema_contable.sistema.contable.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.name = :name")
     Product searchByName(@Param("name") String name);
+
+    @Query("SELECT p FROM Product p WHERE (SELECT COALESCE(SUM(l.stock), 0) FROM Lot l WHERE l.product = p) > 0")
+    List<Product> findAllWithStock();
 }
