@@ -2,6 +2,8 @@ package com.sistema_contable.sistema.contable.dto;
 
 import java.util.List;
 
+import com.sistema_contable.sistema.contable.dto.sales.PaymentRequestDTO;
+
 public class ProductRequestDTO {
 
     private String name;

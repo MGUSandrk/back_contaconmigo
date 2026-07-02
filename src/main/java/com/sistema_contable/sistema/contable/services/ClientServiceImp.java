@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sistema_contable.sistema.contable.exceptions.BadClientException;
-import com.sistema_contable.sistema.contable.exceptions.ClientNotFindException;
-import com.sistema_contable.sistema.contable.model.Client;
+import com.sistema_contable.sistema.contable.exceptions.sales.BadClientException;
+import com.sistema_contable.sistema.contable.exceptions.sales.ClientNotFindException;
 import com.sistema_contable.sistema.contable.model.VatCondition;
+import com.sistema_contable.sistema.contable.model.sales.Client;
 import com.sistema_contable.sistema.contable.repository.ClientRepository;
 import com.sistema_contable.sistema.contable.services.interfaces.ClientService;
 

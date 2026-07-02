@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sistema_contable.sistema.contable.exceptions.BadPaymentTypeException;
-import com.sistema_contable.sistema.contable.exceptions.PaymentTypeNotFindException;
+import com.sistema_contable.sistema.contable.exceptions.sales.BadPaymentTypeException;
+import com.sistema_contable.sistema.contable.exceptions.sales.PaymentTypeNotFindException;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.sales.PaymentType;
 import com.sistema_contable.sistema.contable.repository.AccountRepository;

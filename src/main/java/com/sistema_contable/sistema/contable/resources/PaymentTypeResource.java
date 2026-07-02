@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistema_contable.sistema.contable.dto.PaymentTypeRequestDTO;
-import com.sistema_contable.sistema.contable.dto.PaymentTypeResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentTypeRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentTypeResponseDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
 import com.sistema_contable.sistema.contable.model.accounting.BalanceAccount;
 import com.sistema_contable.sistema.contable.model.sales.PaymentType;

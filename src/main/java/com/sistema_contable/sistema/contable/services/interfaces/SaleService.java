@@ -2,9 +2,9 @@ package com.sistema_contable.sistema.contable.services.interfaces;
 
 import java.util.List;
 
-import com.sistema_contable.sistema.contable.dto.InvoiceResponseDTO;
-import com.sistema_contable.sistema.contable.dto.SaleRequestDTO;
-import com.sistema_contable.sistema.contable.dto.SaleResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
 import com.sistema_contable.sistema.contable.model.User;
 
 public interface SaleService {

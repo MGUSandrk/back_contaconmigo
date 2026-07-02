@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistema_contable.sistema.contable.dto.ClientRequestDTO;
-import com.sistema_contable.sistema.contable.dto.ClientResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.ClientRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.ClientResponseDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
-import com.sistema_contable.sistema.contable.model.Client;
+import com.sistema_contable.sistema.contable.model.sales.Client;
 import com.sistema_contable.sistema.contable.services.interfaces.ClientService;
 import com.sistema_contable.sistema.contable.services.security.interfaces.AuthorizationService;
 

@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import com.sistema_contable.sistema.contable.model.Client;
 import com.sistema_contable.sistema.contable.model.EntityModel;
 import com.sistema_contable.sistema.contable.model.Product;
 import com.sistema_contable.sistema.contable.model.User;

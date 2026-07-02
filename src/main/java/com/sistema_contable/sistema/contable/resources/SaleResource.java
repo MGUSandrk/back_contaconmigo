@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistema_contable.sistema.contable.dto.InvoiceResponseDTO;
-import com.sistema_contable.sistema.contable.dto.SaleRequestDTO;
-import com.sistema_contable.sistema.contable.dto.SaleResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
 import com.sistema_contable.sistema.contable.model.User;
 import com.sistema_contable.sistema.contable.services.interfaces.SaleService;

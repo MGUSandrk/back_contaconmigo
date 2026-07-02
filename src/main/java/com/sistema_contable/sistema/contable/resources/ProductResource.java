@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sistema_contable.sistema.contable.dto.LotRequestDTO;
 import com.sistema_contable.sistema.contable.dto.LotResponseDTO;
-import com.sistema_contable.sistema.contable.dto.PaymentRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductLotRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.PaymentRequestDTO;
 import com.sistema_contable.sistema.contable.exceptions.ModelExceptions;
 import com.sistema_contable.sistema.contable.model.Lot;
 import com.sistema_contable.sistema.contable.model.Product;

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sistema_contable.sistema.contable.exceptions.InvoiceNotFindException;
+import com.sistema_contable.sistema.contable.exceptions.sales.InvoiceNotFindException;
 import com.sistema_contable.sistema.contable.model.sales.Invoice;
 import com.sistema_contable.sistema.contable.repository.InvoiceRepository;
 import com.sistema_contable.sistema.contable.services.interfaces.InvoiceService;
