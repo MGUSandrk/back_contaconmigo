@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +72,23 @@ public class ProductResource {
             List<Payment> payments = paymentRequest(dto != null ? dto.getPayments() : null);
             service.addLot(id, lot, payments, userDB);
             return new ResponseEntity<>(null, HttpStatus.CREATED);
+        } catch (ModelExceptions modelError) {
+            System.out.println(modelError.getMessage());
+            return new ResponseEntity<>(null, modelError.getHttpStatus());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@RequestHeader("Authorization") String token, @PathVariable Long id,
+            @RequestBody ProductRequestDTO dto) {
+        try {
+            authService.adminAuthorize(token);
+            Product product = productRequest(dto);
+            Product updatedProduct = service.update(id, product);
+            return new ResponseEntity<>(productResponse(updatedProduct), HttpStatus.OK);
         } catch (ModelExceptions modelError) {
             System.out.println(modelError.getMessage());
             return new ResponseEntity<>(null, modelError.getHttpStatus());

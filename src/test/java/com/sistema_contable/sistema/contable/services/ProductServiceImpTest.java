@@ -29,6 +29,31 @@ class ProductServiceImpTest {
     private ProductServiceImp service;
 
     @Test
+    void updateOnlyChangesNameAndSalePrice() throws Exception {
+        Product storedProduct = new Product();
+        storedProduct.setId(1L);
+        storedProduct.setName("Yerba");
+        storedProduct.setSalePrice(1200.0);
+
+        Product changes = new Product();
+        changes.setName("Yerba Especial");
+        changes.setSalePrice(1500.0);
+
+        when(repository.searchById(1L)).thenReturn(storedProduct);
+        when(repository.searchByName("Yerba Especial")).thenReturn(null);
+        when(repository.save(storedProduct)).thenReturn(storedProduct);
+
+        Product result = service.update(1L, changes);
+
+        assertEquals(storedProduct, result);
+        assertEquals("Yerba Especial", storedProduct.getName());
+        assertEquals(1500.0, storedProduct.getSalePrice());
+        verify(repository).searchById(1L);
+        verify(repository).searchByName("Yerba Especial");
+        verify(repository).save(storedProduct);
+    }
+
+    @Test
     void getAllWithStockReturnsRepositoryProducts() throws Exception {
         Product product = new Product();
         product.setId(1L);

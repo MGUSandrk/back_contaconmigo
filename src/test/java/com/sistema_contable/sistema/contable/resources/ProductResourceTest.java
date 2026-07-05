@@ -2,6 +2,8 @@ package com.sistema_contable.sistema.contable.resources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,10 +11,12 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.sistema_contable.sistema.contable.dto.ProductRequestDTO;
 import com.sistema_contable.sistema.contable.dto.ProductResponseDTO;
 import com.sistema_contable.sistema.contable.model.Lot;
 import com.sistema_contable.sistema.contable.model.Product;
@@ -21,6 +25,41 @@ import com.sistema_contable.sistema.contable.services.interfaces.ProductService;
 import com.sistema_contable.sistema.contable.services.security.interfaces.AuthorizationService;
 
 class ProductResourceTest {
+
+    @Test
+    void updateAuthorizesAdminAndReturnsUpdatedProductResponse() throws Exception {
+        ProductService service = mock(ProductService.class);
+        AuthorizationService authService = mock(AuthorizationService.class);
+        ProductResource resource = new ProductResource();
+        ReflectionTestUtils.setField(resource, "service", service);
+        ReflectionTestUtils.setField(resource, "authService", authService);
+
+        ProductRequestDTO request = new ProductRequestDTO();
+        request.setName("Yerba Especial");
+        request.setSalePrice(1500.0);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setId(1L);
+        updatedProduct.setName("Yerba Especial");
+        updatedProduct.setSalePrice(1500.0);
+
+        when(authService.adminAuthorize("Bearer token")).thenReturn(new User());
+        when(service.update(eq(1L), any(Product.class))).thenReturn(updatedProduct);
+
+        ResponseEntity<?> response = resource.update("Bearer token", 1L, request);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        ProductResponseDTO body = (ProductResponseDTO) response.getBody();
+        assertNotNull(body);
+        assertEquals(1L, body.getId());
+        assertEquals("Yerba Especial", body.getName());
+        assertEquals(1500.0, body.getSalePrice());
+        verify(authService).adminAuthorize("Bearer token");
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+        verify(service).update(eq(1L), productCaptor.capture());
+        assertEquals("Yerba Especial", productCaptor.getValue().getName());
+        assertEquals(1500.0, productCaptor.getValue().getSalePrice());
+    }
 
     @Test
     void getAllWithStockAuthorizesSellerAndReturnsProductResponses() throws Exception {
