@@ -86,12 +86,20 @@ public class DataInitializer implements CommandLineRunner {
         accountService.create(egreso,null);
 
         Account cajaybanco = new ControlAccount();
-        cajaybanco .setName("Caja y Banco");
+        cajaybanco.setName("Caja y Banco");
         accountService.create(cajaybanco, 1L);
 
         Account caja= new BalanceAccount();
         caja.setName("Caja");
         accountService.create(caja, 6L);
+
+        Account documentosACobrar = new BalanceAccount();
+        documentosACobrar.setName("Documentos a cobrar");
+        accountService.create(documentosACobrar, 6L);
+
+        Account valoresADepositar = new BalanceAccount();
+        valoresADepositar.setName("Valores a depositar");
+        accountService.create(valoresADepositar, 6L);
 
         Account creditos  = new ControlAccount();
         creditos.setName("Crédito");
@@ -124,6 +132,10 @@ public class DataInitializer implements CommandLineRunner {
         Account costoMercaderiasVendidas = new BalanceAccount();
         costoMercaderiasVendidas.setName("Costo de Mercaderías Vendidas");
         accountService.create(costoMercaderiasVendidas, 5L);
+
+        Account descuentosOtorgados = new BalanceAccount();
+        descuentosOtorgados.setName("Descuentos Otorgados");
+        accountService.create(descuentosOtorgados, 5L);
 
         EntityModel entity = new EntityModel();
         entity.setName("Empresa");

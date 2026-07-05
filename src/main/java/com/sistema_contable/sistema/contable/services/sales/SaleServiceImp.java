@@ -3,7 +3,9 @@ package com.sistema_contable.sistema.contable.services.sales;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.sistema_contable.sistema.contable.model.sales.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -425,16 +427,21 @@ public class SaleServiceImp implements SaleService {
         
         List<Movement> movements = new ArrayList<>();
 
-        // Debit: Payment accounts (Caja, Banco, etc.) - one for each payment method
+        // Debit: Payment accounts (Caja, Banco, etc.) - grouped by account to avoid duplicates
+        Map<BalanceAccount, Double> groupedAccounts = new HashMap<>();
         for (PaymentMethodDTO paymentDTO : payments) {
             PaymentType paymentType = paymentTypeRepository.searchByName(paymentDTO.getMethod());
             if (paymentType == null || paymentType.getAccount() == null) {
                 throw new BadSaleException("ERROR : Payment type or account not found for: " + paymentDTO.getMethod());
             }
-            
+            groupedAccounts.merge(paymentType.getAccount(), paymentDTO.getAmount(), Double::sum);
+        }
+
+        // Generate one movement per unique account
+        for (Map.Entry<BalanceAccount, Double> grouppedAccount : groupedAccounts.entrySet()) {
             Movement debitMovement = new Movement();
-            debitMovement.setAccount(paymentType.getAccount());
-            debitMovement.setDebit(paymentDTO.getAmount());
+            debitMovement.setAccount(grouppedAccount.getKey());
+            debitMovement.setDebit(grouppedAccount.getValue());
             debitMovement.setCredit(0.0);
             movements.add(debitMovement);
         }
