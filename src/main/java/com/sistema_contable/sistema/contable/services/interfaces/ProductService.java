@@ -11,6 +11,7 @@ public interface ProductService {
     void create(Product product) throws Exception;
     Product create(Product product, List<Payment> payments, User user) throws Exception;
     Product addLot(Long productId, Lot lot, List<Payment> payments, User user) throws Exception;
+    Product update(Long id, Product product) throws Exception;
     List<Product> getAll() throws Exception;
     List<Product> getAllWithStock() throws Exception;
     Product searchById(Long id) throws Exception;

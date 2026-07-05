@@ -15,6 +15,9 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     List<Sale> findByClientId(Long clientId);
 
+    @Query("SELECT s FROM Sale s WHERE s.dateCreated >= :startDate AND s.dateCreated < :endDate ORDER BY s.dateCreated DESC")
+    List<Sale> findByDateCreatedBetween(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
     @Query("SELECT COUNT(s) FROM Sale s WHERE s.dateCreated >= :startDate AND s.dateCreated < :endDate")
     Long countSalesByDateCreatedBetween(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 

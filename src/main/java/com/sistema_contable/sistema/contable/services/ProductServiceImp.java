@@ -53,11 +53,23 @@ public class ProductServiceImp implements ProductService {
         return savedProduct;
     }
 
+    @Override
+    public Product update(Long id, Product product) throws Exception {
+        Product storedProduct = searchById(id);
+        validateProductUpdate(product);
+        String name = formatName(product.getName());
+        Product productByName = searchByName(name);
+        if (productByName != null && !productByName.getId().equals(id)) {
+            throw new BadProductException("ERROR : Found product with same name");
+        }
+        storedProduct.setName(name);
+        storedProduct.setSalePrice(product.getSalePrice());
+        return repository.save(storedProduct);
+    }
+
     private Product saveNewProduct(Product product) throws Exception {
         validateProduct(product);
-        String name = product.getName().strip();
-        String formatName = name.substring(0, 1).toUpperCase() + name.substring(1);
-        product.setName(formatName);
+        product.setName(formatName(product.getName()));
         if (this.searchByName(product.getName()) != null) {
             throw new BadProductException("ERROR : Found product with same name");
         }
@@ -129,6 +141,23 @@ public class ProductServiceImp implements ProductService {
         if (product.getLots() == null || product.getLots().size() != 1) {
             throw new BadProductException("ERROR : Product needs one initial lot");
         }
+    }
+
+    private void validateProductUpdate(Product product) throws Exception {
+        if (product == null) {
+            throw new BadProductException("ERROR : Product is required");
+        }
+        if (product.getName() == null || product.getName().isBlank()) {
+            throw new BadProductException("ERROR : Product name is required");
+        }
+        if (product.getSalePrice() == null || product.getSalePrice() < 0) {
+            throw new BadProductException("ERROR : Product sale price is invalid");
+        }
+    }
+
+    private String formatName(String name) {
+        String cleanName = name.strip();
+        return cleanName.substring(0, 1).toUpperCase() + cleanName.substring(1);
     }
 
     private void validateLot(Lot lot) throws Exception {
