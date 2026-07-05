@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4;
+            margin: 16mm;
+        }
+
+        body {
+            color: #111;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 4px;
+        }
+
+        h2 {
+            font-size: 14px;
+            margin: 18px 0 8px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #222;
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eee;
+            font-weight: bold;
+        }
+
+        .muted {
+            color: #555;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .summary {
+            width: 55%;
+        }
+
+        .total-row td {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .detail {
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Informe mensual de ventas</h1>
+    <div class="muted">
+        Periodo:
+        <span th:text="${#numbers.formatInteger(month, 2)}">07</span>/<span th:text="${year}">2026</span>
+    </div>
+
+    <h2>Dinero ingresado por tipo de pago</h2>
+    <table class="summary">
+        <thead>
+            <tr>
+                <th>Tipo de pago</th>
+                <th class="right">Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="entry : ${totalsByPaymentType.entrySet()}">
+                <td th:text="${entry.key}">Efectivo</td>
+                <td class="right" th:text="${#numbers.formatDecimal(entry.value, 1, 2)}">0.00</td>
+            </tr>
+            <tr th:if="${totalsByPaymentType.isEmpty()}">
+                <td colspan="2">No hay ingresos registrados para el periodo.</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td>Total ingresado</td>
+                <td class="right" th:text="${#numbers.formatDecimal(totalIncome, 1, 2)}">0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Detalle de ventas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th>Entidad</th>
+                <th>Productos</th>
+                <th>Pagos</th>
+                <th class="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="sale : ${sales}">
+                <td th:text="${sale.id != null ? sale.id : '-'}">1</td>
+                <td th:text="${sale.dateCreated != null ? #dates.format(sale.dateCreated, 'dd/MM/yyyy') : '-'}">01/07/2026</td>
+                <td th:text="${sale.clientFullName != null ? sale.clientFullName : '-'}">Cliente</td>
+                <td th:text="${sale.sellerUsername != null ? sale.sellerUsername : '-'}">Vendedor</td>
+                <td th:text="${sale.entityName != null ? sale.entityName : '-'}">Entidad</td>
+                <td>
+                    <div class="detail" th:each="product : ${sale.products}">
+                        <span th:text="${product.productName != null ? product.productName : '-'}">Producto</span>
+                        (<span th:text="${product.quantity != null ? product.quantity : 0}">1</span>)
+                    </div>
+                    <span th:if="${sale.products.isEmpty()}">-</span>
+                </td>
+                <td>
+                    <div class="detail" th:each="payment : ${sale.payments}">
+                        <span th:text="${payment.method != null ? payment.method : 'Sin metodo'}">Efectivo</span>:
+                        <span th:text="${payment.amount != null ? #numbers.formatDecimal(payment.amount, 1, 2) : '0.00'}">0.00</span>
+                    </div>
+                    <span th:if="${sale.payments.isEmpty()}">-</span>
+                </td>
+                <td class="right" th:text="${sale.totalPrice != null ? #numbers.formatDecimal(sale.totalPrice, 1, 2) : '0.00'}">0.00</td>
+            </tr>
+            <tr th:if="${sales.isEmpty()}">
+                <td colspan="8">No hay ventas registradas para el periodo.</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

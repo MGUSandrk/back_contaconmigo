@@ -3,7 +3,9 @@ package com.sistema_contable.sistema.contable.services.sales;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,8 +15,10 @@ import com.sistema_contable.sistema.contable.dto.sales.InvoiceItemResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.InvoiceResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleItemRequestDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleItemResponseDTO;
+import com.sistema_contable.sistema.contable.dto.sales.SalePaymentResponseDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleRequestDTO;
 import com.sistema_contable.sistema.contable.dto.sales.SaleResponseDTO;
+import com.sistema_contable.sistema.contable.exceptions.sales.BadSaleException;
 import com.sistema_contable.sistema.contable.exceptions.sales.ClientNotFoundException;
 import com.sistema_contable.sistema.contable.exceptions.sales.InsufficientStockException;
 import com.sistema_contable.sistema.contable.model.CostingMethodType;
@@ -74,6 +78,9 @@ public class SaleServiceImp implements SaleService {
 
     @Autowired
     private EntryService entryService;
+
+    @Autowired
+    private SalesReportPdfService salesReportPdfService;
 
     //CRUD
     @Override
@@ -169,18 +176,21 @@ public class SaleServiceImp implements SaleService {
     @Transactional(readOnly = true)
     public List<SaleResponseDTO> getAllSales() throws Exception {
         List<Sale> sales = saleRepository.findAll();
-        List<SaleResponseDTO> saleResponseDTOs = new ArrayList<>();
-        for (Sale sale : sales) {
-            SaleResponseDTO saleResponseDTO = mapToSaleResponseDTO(sale);
-            for (SaleProduct saleProduct : sale.getSaleProducts()) {
-                SaleItemResponseDTO itemResponseDTO = new SaleItemResponseDTO();
-                itemResponseDTO.setProductName(saleProduct.getProduct().getName());
-                itemResponseDTO.setQuantity(saleProduct.getQuantity());
-                saleResponseDTO.getProducts().add(itemResponseDTO);
-            }
-            saleResponseDTOs.add(saleResponseDTO);
-        }
-        return saleResponseDTOs;
+        return sales.stream()
+                .map(this::mapToSaleResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SaleResponseDTO> getSalesByDate(Integer month, Integer year) throws Exception {
+        validateSalesPeriod(month, year);
+        Date startDate = getMonthStart(month, year);
+        Date endDate = getNextMonthStart(startDate);
+        return saleRepository.findByDateCreatedBetween(startDate, endDate)
+                .stream()
+                .map(this::mapToSaleResponseDTO)
+                .toList();
     }
 
     @Override
@@ -213,6 +223,18 @@ public class SaleServiceImp implements SaleService {
         return saleRepository.countSalesByDateCreatedBetween(startDate, endDate);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] generateMonthlySalesReportPdf(Integer month, Integer year) throws Exception {
+        List<SaleResponseDTO> sales = getSalesByDate(month, year);
+        Map<String, Double> totalsByPaymentType = totalsByPaymentType(sales);
+        Double totalIncome = totalsByPaymentType.values()
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        return salesReportPdfService.generarPdf(month, year, sales, totalsByPaymentType, totalIncome);
+    }
+
     //SECONDARY METHODS
     private Date getCurrentMonthStart() {
         Calendar calendar = Calendar.getInstance();
@@ -231,6 +253,27 @@ public class SaleServiceImp implements SaleService {
         return calendar.getTime();
     }
 
+    private Date getMonthStart(Integer month, Integer year) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    private void validateSalesPeriod(Integer month, Integer year) throws BadSaleException {
+        if (month == null || month < 1 || month > 12) {
+            throw new BadSaleException("ERROR : Sale month is invalid");
+        }
+        if (year == null || year <= 0) {
+            throw new BadSaleException("ERROR : Sale year is invalid");
+        }
+    }
+
     private SaleResponseDTO mapToSaleResponseDTO(Sale sale) {
         SaleResponseDTO dto = new SaleResponseDTO();
         dto.setId(sale.getId());
@@ -242,7 +285,43 @@ public class SaleServiceImp implements SaleService {
         dto.setEntityId(sale.getEntity() != null ? sale.getEntity().getId() : null);
         dto.setEntityName(sale.getEntity() != null ? sale.getEntity().getName() : null);
         dto.setTotalPrice(sale.getTotalPrice());
+        if (sale.getSaleProducts() != null) {
+            for (SaleProduct saleProduct : sale.getSaleProducts()) {
+                dto.getProducts().add(mapToSaleItemResponseDTO(saleProduct));
+            }
+        }
+        if (sale.getPayments() != null) {
+            for (Payment payment : sale.getPayments()) {
+                dto.getPayments().add(mapToSalePaymentResponseDTO(payment));
+            }
+        }
         return dto;
+    }
+
+    private SaleItemResponseDTO mapToSaleItemResponseDTO(SaleProduct saleProduct) {
+        SaleItemResponseDTO dto = new SaleItemResponseDTO();
+        dto.setProductName(saleProduct.getProduct() != null ? saleProduct.getProduct().getName() : null);
+        dto.setQuantity(saleProduct.getQuantity());
+        return dto;
+    }
+
+    private SalePaymentResponseDTO mapToSalePaymentResponseDTO(Payment payment) {
+        SalePaymentResponseDTO dto = new SalePaymentResponseDTO();
+        dto.setMethod(payment.getPaymentType() != null ? payment.getPaymentType().getType() : null);
+        dto.setAmount(payment.getAmount());
+        return dto;
+    }
+
+    private Map<String, Double> totalsByPaymentType(List<SaleResponseDTO> sales) {
+        Map<String, Double> totals = new LinkedHashMap<>();
+        for (SaleResponseDTO sale : sales) {
+            for (SalePaymentResponseDTO payment : sale.getPayments()) {
+                String method = payment.getMethod() != null ? payment.getMethod() : "Sin metodo";
+                Double amount = payment.getAmount() != null ? payment.getAmount() : 0.0;
+                totals.put(method, totals.getOrDefault(method, 0.0) + amount);
+            }
+        }
+        return totals;
     }
 
     private InvoiceResponseDTO mapToInvoiceResponseDTO(Invoice invoice) {

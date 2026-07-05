@@ -10,7 +10,9 @@ import com.sistema_contable.sistema.contable.model.User;
 public interface SaleService {
     InvoiceResponseDTO createSale(SaleRequestDTO saleRequestDTO, User seller) throws Exception;
     List<SaleResponseDTO> getAllSales() throws Exception;
+    List<SaleResponseDTO> getSalesByDate(Integer month, Integer year) throws Exception;
     List<SaleResponseDTO> getSalesByClientId(Long clientId) throws Exception;
     List<InvoiceResponseDTO> getInvoicesByClientCuit(String clientCuit) throws Exception;
     Long countSalesOfCurrentMonth() throws Exception;
+    byte[] generateMonthlySalesReportPdf(Integer month, Integer year) throws Exception;
 }

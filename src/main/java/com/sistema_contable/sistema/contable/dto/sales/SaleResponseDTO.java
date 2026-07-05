@@ -16,6 +16,7 @@ public class SaleResponseDTO {
     private String entityName;
     private Double totalPrice;
     private List<SaleItemResponseDTO> products = new ArrayList<>();
+    private List<SalePaymentResponseDTO> payments = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -91,6 +92,10 @@ public class SaleResponseDTO {
 
     public List<SaleItemResponseDTO> getProducts() {
         return products;
+    }
+
+    public List<SalePaymentResponseDTO> getPayments() {
+        return payments;
     }
 
 }
