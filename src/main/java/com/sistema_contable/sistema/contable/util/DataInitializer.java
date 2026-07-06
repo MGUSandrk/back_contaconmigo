@@ -36,18 +36,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        try {
-            //if users table are empty add the admin
-            if (userService.getAll().isEmpty()){
-                addUsers();
-            }
-            //if accounts table are empty add the basic set of account
-            if (accountService.getAll().isEmpty()){
-                addAccounts();
-            }
-        } catch (Exception e) {
-            addUsers();
+        //if accounts table are empty add the basic set of account
+        if (accountService.getAll().isEmpty()){
             addAccounts();
+        }
+        //if users table are empty add the admin
+        if (userService.getAll().isEmpty()){
+            addUsers();
         }
     }
 
@@ -87,55 +82,55 @@ public class DataInitializer implements CommandLineRunner {
 
         Account cajaybanco = new ControlAccount();
         cajaybanco.setName("Caja y Banco");
-        accountService.create(cajaybanco, 1L);
+        accountService.create(cajaybanco, accountService.searchByName("Activo").getId());
 
         Account caja= new BalanceAccount();
         caja.setName("Caja");
-        accountService.create(caja, 6L);
+        accountService.create(caja, accountService.searchByName("Caja y Banco").getId());
 
         Account documentosACobrar = new BalanceAccount();
         documentosACobrar.setName("Documentos a cobrar");
-        accountService.create(documentosACobrar, 6L);
+        accountService.create(documentosACobrar, accountService.searchByName("Caja y Banco").getId());
 
         Account valoresADepositar = new BalanceAccount();
         valoresADepositar.setName("Valores a depositar");
-        accountService.create(valoresADepositar, 6L);
+        accountService.create(valoresADepositar, accountService.searchByName("Caja y Banco").getId());
 
         Account creditos  = new ControlAccount();
         creditos.setName("Crédito");
-        accountService.create(creditos, 1L);
+        accountService.create(creditos, accountService.searchByName("Activo").getId());
 
         Account bienes  = new ControlAccount();
         bienes.setName("Bienes de cambio");
-        accountService.create(bienes, 1L);
+        accountService.create(bienes, accountService.searchByName("Activo").getId());
 
         Account mercaderias  = new BalanceAccount();
         mercaderias.setName("Mercaderías");
-        accountService.create(mercaderias, 9L);
+        accountService.create(mercaderias, accountService.searchByName("Bienes de cambio").getId());
 
         Account deudascom = new ControlAccount();
         deudascom.setName("Deudas de comerciales");
-        accountService.create(deudascom, 2L);
+        accountService.create(deudascom, accountService.searchByName("Pasivo").getId());
 
         Account capital = new BalanceAccount();
         capital.setName("Capital");
-        accountService.create(capital,3L);
+        accountService.create(capital, accountService.searchByName("Patrimonio").getId());
 
         Account ventas = new BalanceAccount();
         ventas.setName("Ventas");
-        accountService.create(ventas, 4L);
+        accountService.create(ventas, accountService.searchByName("Resultado Positivo").getId());
 
         Account otrosing = new ControlAccount();
         otrosing.setName("Otros ingresos");
-        accountService.create(otrosing, 4L);
+        accountService.create(otrosing, accountService.searchByName("Resultado Positivo").getId());
 
         Account costoMercaderiasVendidas = new BalanceAccount();
         costoMercaderiasVendidas.setName("Costo de Mercaderías Vendidas");
-        accountService.create(costoMercaderiasVendidas, 5L);
+        accountService.create(costoMercaderiasVendidas, accountService.searchByName("Resultado Negativo").getId());
 
         Account descuentosOtorgados = new BalanceAccount();
         descuentosOtorgados.setName("Descuentos Otorgados");
-        accountService.create(descuentosOtorgados, 5L);
+        accountService.create(descuentosOtorgados, accountService.searchByName("Resultado Negativo").getId());
 
         EntityModel entity = new EntityModel();
         entity.setName("Empresa");
