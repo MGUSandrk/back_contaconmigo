@@ -1,11 +1,6 @@
 package com.sistema_contable.sistema.contable.services.sales;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.sistema_contable.sistema.contable.model.sales.*;
 import org.springframework.beans.factory.annotation.Autowired;
