@@ -414,14 +414,36 @@ public class SaleServiceImp implements SaleService {
         }
 
         Double totalCost = 0.0;
-        Integer remaining = quantity;
 
-        for (Lot lot : lots) {
-            if (remaining <= 0) break;
+        if (costingMethod == CostingMethodType.WAC) {
+            // WAC: Calculate weighted average cost
+            Double totalValue = 0.0;
+            Integer totalStock = 0;
 
-            Integer toTake = Math.min(remaining, lot.getStock());
-            totalCost += toTake * lot.getUnitPrice();
-            remaining -= toTake;
+            for (Lot lot : lots) {
+                totalValue += lot.getStock() * lot.getUnitPrice();
+                totalStock += lot.getStock();
+            }
+
+            if (totalStock == 0) {
+                throw new InsufficientStockException(
+                    "ERROR : No stock available for product " + product.getName()
+                );
+            }
+
+            Double weightedAverageUnitCost = totalValue / totalStock;
+            totalCost = weightedAverageUnitCost * quantity;
+        } else {
+            // FIFO and LIFO: Sequential lot-based calculation
+            Integer remaining = quantity;
+
+            for (Lot lot : lots) {
+                if (remaining <= 0) break;
+
+                Integer toTake = Math.min(remaining, lot.getStock());
+                totalCost += toTake * lot.getUnitPrice();
+                remaining -= toTake;
+            }
         }
 
         return totalCost;
